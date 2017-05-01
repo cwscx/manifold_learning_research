@@ -1,0 +1,6 @@
+__pycache__
+MNIST_data
+xs
+ys
+*.pyc
+isomap_model
