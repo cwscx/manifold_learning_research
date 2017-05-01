@@ -34,6 +34,9 @@ class manifold_learn():
 	def getIterTime(self):
 		return self.iter_time
 
+	"""
+	Save the xs and ys data for training the isomap model. Save the xs and ys locally.
+	"""
 	def saveXY(self, filename1="xs", filename2="ys"):
 		mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 		all_xs, all_ys = mnist.train.next_batch(self.iter_time * self.batch_size)
@@ -43,12 +46,18 @@ class manifold_learn():
 
 		return all_xs, all_ys
 
+	"""
+	Restore the saved xs and ys from the local file. If it's not there, call saveXY
+	"""
 	def getXY(self, filename1="xs", filename2="ys"):
 		if os.path.isfile(filename1) and os.path.isfile(filename2):
 			return pickle.load(open(filename1, "rb")), pickle.load(open(filename2, "rb"))
 		else:
 			return self.saveXY(filename1, filename2)
 
+	"""
+	Train the isomap model and save the model locally for future access (you don't know how long it takes to generate)
+	"""
 	def trainAndSaveIsomap(self, filename="isomap_model"):
 		all_xs, all_ys = self.getXY("xs", "ys")
 
@@ -58,6 +67,9 @@ class manifold_learn():
 
 		return im
 
+	"""
+	Restore the isomap model from the stored local file
+	"""
 	def readIsomap(self, filename="isomap_model"):
 		if os.path.isfile(filename):
 			return pickle.load(open(filename, "rb"))

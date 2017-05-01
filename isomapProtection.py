@@ -14,7 +14,6 @@ def helper(X):
 
 if __name__ == "__main__":
 	mfo = manifold_learn(784, 100, 1, 100, 1000)
-	
 	im = mfo.readIsomap(FILENAME)
 		
 	x = tf.placeholder(tf.float32, [None, mfo.getInputDimension()])
