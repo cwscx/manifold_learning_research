@@ -8,11 +8,6 @@ from sklearn import manifold
 class manifold_learn():
 
 	def __init__(self, input_dimension, isomap_dimension, knn, batch_size, iter_time):
-		if isomap_dimension > batch_size:
-			print("Error: BATCH_SIZE should not be less than ISOMAP_DIMENSION. \
-				Becuase the reducted dimension is min(ISOMAP_DIMENSINO, BATCH_SIZE)")
-			exit(1)
-
 		self.input_dimension = input_dimension
 		self.isomap_dimension = isomap_dimension
 		self.knn = knn
