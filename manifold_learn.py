@@ -61,7 +61,7 @@ class manifold_learn():
 	def trainAndSaveIsomap(self, filename="isomap_model"):
 		all_xs, all_ys = self.getXY("xs", "ys")
 
-		im = manifold.Isomap(self.knn, self.isomap_dimension)
+		im = manifold.Isomap(self.knn, self.isomap_dimension, n_jobs=-1)
 		im = im.fit(all_xs)
 		pickle.dump(im, open(filename, "wb"))
 

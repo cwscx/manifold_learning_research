@@ -13,11 +13,11 @@ def helper(X):
 	return im.transform(X)
 
 if __name__ == "__main__":
-	mfo = manifold_learn(784, 100, 1, 100, 1000)
+	mfo = manifold_learn(784, 20, 1, 100, 400)
 	im = mfo.readIsomap(FILENAME)
 		
 	x = tf.placeholder(tf.float32, [None, mfo.getInputDimension()])
-	reduced_x = tf.py_func(helper, [x], [tf.float64])[0]
+	reduced_x = tf.py_func(im.transform, [x], [tf.float64])[0]
 	reduced_x = tf.cast(reduced_x, tf.float32)
 	W = tf.Variable(tf.zeros([mfo.getIsomapDimension(), 10]))
 	b = tf.Variable(tf.zeros([10]))
