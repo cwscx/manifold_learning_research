@@ -20,8 +20,13 @@ if __name__ == "__main__":
 	x = tf.placeholder(tf.float32, [None, mfo.getInputDimension()])
 	reduced_x = tf.py_func(helper, [x], [tf.float64])[0]
 	reduced_x = tf.cast(reduced_x, tf.float32)
+
+	# W = tf.Variable(tf.zeros([mfo.getInputDimension(), 10]))
 	W = tf.Variable(tf.zeros([mfo.getIsomapDimension(), 10]))
+
 	b = tf.Variable(tf.zeros([10]))
+
+	# y = tf.nn.softmax(tf.matmul(x, W) + b)
 	y = tf.nn.softmax(tf.matmul(reduced_x, W) + b)
 
 	y_ = tf.placeholder(tf.float32, [None, 10])
