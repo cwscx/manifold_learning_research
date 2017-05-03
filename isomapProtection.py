@@ -10,14 +10,15 @@ FILENAME = "isomap_model"
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 def helper(X):
-	return im.transform(X)
+	result = im.transform(X)
+	return result
 
 if __name__ == "__main__":
-	mfo = manifold_learn(784, 120, 3, 100, 100)
+	mfo = manifold_learn(784, 30, 30, 100, 100)
 	im = mfo.readIsomap(FILENAME)
-		
+	
 	x = tf.placeholder(tf.float32, [None, mfo.getInputDimension()])
-	reduced_x = tf.py_func(im.transform, [x], [tf.float64])[0]
+	reduced_x = tf.py_func(helper, [x], [tf.float64])[0]
 	reduced_x = tf.cast(reduced_x, tf.float32)
 	W = tf.Variable(tf.zeros([mfo.getIsomapDimension(), 10]))
 	b = tf.Variable(tf.zeros([10]))
@@ -33,6 +34,7 @@ if __name__ == "__main__":
 	tf.global_variables_initializer().run()
 
 	all_xs, all_ys = mfo.getXY()
+
 	for i in range(mfo.getIterTime()):
 		batch_xs = all_xs[i * mfo.getBatchSize() : (i + 1) * mfo.getBatchSize()]
 		batch_ys = all_ys[i * mfo.getBatchSize() : (i + 1) * mfo.getBatchSize()]

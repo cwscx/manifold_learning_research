@@ -3,4 +3,4 @@ MNIST_data
 xs
 ys
 *.pyc
-isomap_model
+isomap_model*
