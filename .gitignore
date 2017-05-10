@@ -4,3 +4,4 @@ xs
 ys
 *.pyc
 isomap_model*
+polluted_images
