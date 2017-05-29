@@ -5,6 +5,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from sklearn import manifold
 
 from manifold_learn import *
+from pollutionImage import *
 
 FILENAME = "isomap_model"
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
@@ -29,7 +30,7 @@ if __name__ == "__main__":
 		if sys.argv[1] == "-c" or sys.argv[1] == "--clean":
 			os.system("del xs ys isomap_model")
 
-	mfo = manifold_learn(784, 100, 2, 100, 100)
+	mfo = manifold_learn(784, 100, 3, 100, 100)
 	im = mfo.readIsomap(FILENAME)
 	print("Training IsoMap done...")
 
@@ -90,5 +91,6 @@ if __name__ == "__main__":
 		train_step.run(feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
 
 	print("test accuracy %g"%accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
-
+	
+	print("test accuracy %g"%accuracy.eval(feed_dict={x: getPollutedImages(), y_: getOrgLabel(), keep_prob: 1.0}))
 	sess.close()
