@@ -47,6 +47,7 @@ def getOrgLabel():
 def showImage(size=10):
 	p_images = getPollutedImages()
 	o_images = getOrgImages()
+	o_labels = getOrgLabel()
 
 	for i in range(size):
 		p_image = p_images[i].reshape(28,28)		
@@ -54,3 +55,5 @@ def showImage(size=10):
 
 		scipy.misc.toimage(p_image).show()
 		scipy.misc.toimage(o_image).show()
+		print(o_labels[i])
+

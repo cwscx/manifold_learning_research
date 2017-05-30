@@ -13,6 +13,7 @@ class manifold_learn():
 		self.knn = knn
 		self.batch_size = batch_size 
 		self.iter_time = iter_time 
+		self.tXs = None
 
 	def getInputDimension(self):
 		return self.input_dimension
@@ -70,3 +71,8 @@ class manifold_learn():
 			return pickle.load(open(filename, "rb"))
 		else:
 			return self.trainAndSaveIsomap(filename)
+
+	def getTransformedX(self, im_filename="isomap_model", x_filename="xs"):
+		im = self.readIsomap(im_filename)
+		xs, _ = self.getXY(x_filename)
+		return im.transform(xs)
