@@ -5,6 +5,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from sklearn import manifold
 
 from manifold_learn import *
+from pollutionImage import *
 
 FILENAME = "isomap_model"
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
@@ -18,7 +19,7 @@ if __name__ == "__main__":
 		if sys.argv[1] == "-c" or sys.argv[1] == "--clean":
 			os.system("del xs ys isomap_model")
 
-	mfo = manifold_learn(784, 10, 6, 100, 100)
+	mfo = manifold_learn(784, 50, 25, 100, 100)
 	im = mfo.readIsomap(FILENAME)
 	
 	x = tf.placeholder(tf.float32, [None, mfo.getInputDimension()])
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
 	# y = tf.nn.softmax(tf.matmul(x, W) + b)
 	y = tf.matmul(reduced_x, W) + b
-
+	
 	y_ = tf.placeholder(tf.float32, [None, 10])
 
 	cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
@@ -52,4 +53,6 @@ if __name__ == "__main__":
 	correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
 
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-	print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
+	# print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
+	print(sess.run(accuracy, feed_dict={x: getPollutedImages()[:2], y_: getOrgLabel()[:2]}))
+	

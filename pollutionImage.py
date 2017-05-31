@@ -28,7 +28,7 @@ def getOrgImages():
 	original_images = list()
 	for p in pollution:
 		if not _checkNegative(p["polluted_image"]):
-			original_images.append(p["original_image"])
+			original_images.append(p["original_image"][0])
 
 	return np.asarray(original_images)
 
@@ -44,11 +44,11 @@ def getOrgLabel():
 
 	return np.asarray(original_labels)
 
-def showImage(size=10):
+def showImage(size=2):
 	p_images = getPollutedImages()
 	o_images = getOrgImages()
 	o_labels = getOrgLabel()
-
+		
 	for i in range(size):
 		p_image = p_images[i].reshape(28,28)		
 		o_image = o_images[i].reshape(28,28)
@@ -56,4 +56,3 @@ def showImage(size=10):
 		scipy.misc.toimage(p_image).show()
 		scipy.misc.toimage(o_image).show()
 		print(o_labels[i])
-

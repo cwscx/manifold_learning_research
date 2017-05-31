@@ -5,6 +5,7 @@ import numpy as np
 from scipy.spatial import distance
 from tensorflow.examples.tutorials.mnist import input_data
 from sklearn import manifold
+from sklearn.neighbors import KNeighborsClassifier
 
 from manifold_learn import *
 from pollutionImage import *
@@ -14,11 +15,6 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 protection = False
 pollution = False
-
-def dist(x, y):
-	x = x.reshape(1,-1)
-	y = y.reshape(1,-1)
-	return np.sqrt(np.sum((x - y) ** 2))
 
 def getMajorLabels(labels):
 	# Partition to put the largest element in the rightmost index
@@ -34,23 +30,21 @@ if __name__ == "__main__":
 			print("Polluted testing case")
 			pollution = True
 
-	# k = input("Please enter k: ")
-	k = 1
-
-	k = int(k)
-	if k % 2 == 0:
-		k = k + 1	# Make sure it is odd	
-		print("WARNING: k should be odd. Justify your k from ", k - 1, " to ", k)
-
 	if protection:
-		im = manifold.Isomap(50, 100,n_jobs=-1)
-		train_xs = im.fit_transform(mnist.train.images[:10000])
+		im = manifold.Isomap(10, 50,n_jobs=-1)
+		train_xs = mnist.train.images[:10000]
+		train_ls = mnist.train.labels[:10000]
+		train_xs = im.fit_transform(train_xs)
 		print("finish training")
 	else:
 		train_xs = mnist.train.images
+		train_ls = mnist.train.labels
 
 	test_num = 0.0
 	test_err = 0.0
+
+	knnt = KNeighborsClassifier(n_neighbors=1)
+	knnt.fit(train_xs, train_ls)
 
 	# No need to train, go into test directly
 	if not pollution:
@@ -59,39 +53,29 @@ if __name__ == "__main__":
 
 			for i in range(len(batch[0])):
 				if protection:
-					test_x = im.transform(batch[0][i].reshape(1, -1))[0]
+					test_x = im.transform(batch[0][i].reshape(1, -1))[0].reshape(1, -1)
 				else:
-					test_x = batch[0][i]
+					test_x = batch[0][i].reshape(1, -1)
 
-				dist_arr = [dist(test_x, img) for img in train_xs]
-				nearest_indices = np.argpartition(dist_arr, k)[:k]
-				nearest_labels = np.array([mnist.train.labels[index] for index in nearest_indices])
+				predicted_label = knnt.predict(test_x)[0]
 
-				predicted_label = getMajorLabels(nearest_labels)
-				actual_label = getMajorLabels([batch[1][i]])
-
-				if predicted_label != actual_label:
+				if any(predicted_label != batch[1][i]):
 					test_err += 1.0
 				test_num += 1.0
-
 	else:
 		polluted_images = getPollutedImages()
 		original_labels = getOrgLabel()
 
-		for i in range(len(original_labels)):
+		# for i in range(len(original_labels)):
+		for i in range(len(polluted_images)):
 			if protection:
-				test_x = im.transform(polluted_images[i].reshape(1, -1))[0]
+				test_x = im.transform(polluted_images[i].reshape(1, -1))[0].reshape(1, -1)
 			else:
-				test_x = polluted_images[i]
+				test_x = polluted_images[i].reshape(1, -1)
 
-			dist_arr = [dist(test_x, img) for img in train_xs]
-			nearest_indices = np.argpartition(dist_arr, k)[:k]
-			nearest_labels = np.array([mnist.train.labels[index] for index in nearest_indices])
+			predicted_label = knnt.predict(test_x)[0]
 
-			predicted_label = getMajorLabels(nearest_labels)
-			actual_label = getMajorLabels([original_labels[i]])
-
-			if predicted_label != actual_label:
+			if any(predicted_label != original_labels[i]):
 				test_err += 1.0
 			test_num += 1.0
 
