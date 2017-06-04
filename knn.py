@@ -15,6 +15,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 protection = False
 pollution = False
+save = False
 
 def getMajorLabels(labels):
 	# Partition to put the largest element in the rightmost index
@@ -29,6 +30,11 @@ if __name__ == "__main__":
 		if "-p" in sys.argv or "--pollution" in sys.argv:
 			print("Polluted testing case")
 			pollution = True
+
+		if "-s" in sys.argv or "--savemodel" in sys.argv:
+			print("Save the knn model")
+			save = True
+			model_name = "knn_model"
 
 	if protection:
 		im = manifold.Isomap(10, 50, n_jobs=-1)
@@ -56,6 +62,9 @@ if __name__ == "__main__":
 	knnt.fit(train_xs, train_ls)
 	print("finish training knn model")
 
+	if save:
+		pickle.dump(knnt, open(model_name, "wb"))
+
 	# No need to train, go into test directly
 	if not pollution:
 		for _ in range(20):
@@ -73,22 +82,21 @@ if __name__ == "__main__":
 					test_err += 1.0
 				test_num += 1.0
 	else:
-		polluted_images = getPollutedImages()
-		original_labels = getOrgLabel()
+		polluted_images = getPollutedImages("knn_polluted_images")
+		original_labels = getOrgLabel("knn_polluted_images")
 
 		# for i in range(len(original_labels)):
 		for i in range(len(polluted_images)):
-			if getMajorLabels([original_labels[i]]) == 1 or getMajorLabels([original_labels[i]]) == 7:
+			
+			if protection:
+				test_x = im.transform(polluted_images[i].reshape(1, -1))[0].reshape(1, -1)
+			else:
+				test_x = polluted_images[i].reshape(1, -1)
 
-				if protection:
-					test_x = im.transform(polluted_images[i].reshape(1, -1))[0].reshape(1, -1)
-				else:
-					test_x = polluted_images[i].reshape(1, -1)
+			predicted_label = knnt.predict(test_x)[0]
 
-				predicted_label = knnt.predict(test_x)[0]
-
-				if any(predicted_label != original_labels[i]):
-					test_err += 1.0
-				test_num += 1.0
+			if any(predicted_label != original_labels[i]):
+				test_err += 1.0
+			test_num += 1.0
 
 	print("test accuracy: ", 1.0 - test_err / test_num)

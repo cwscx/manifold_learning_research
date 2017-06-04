@@ -10,11 +10,11 @@ def _checkNegative(arr):
 
 	return False
 
-def getPollutions():
-	return pickle.load(open("polluted_images", "rb"))
+def getPollutions(filename="polluted_images"):
+	return pickle.load(open(filename, "rb"))
 	
-def getPollutedImages():
-	pollution = pickle.load(open("polluted_images", "rb"))
+def getPollutedImages(filename="polluted_images"):
+	pollution = pickle.load(open(filename, "rb"))
 
 	polluted_images = list()
 	for p in pollution:
@@ -23,8 +23,8 @@ def getPollutedImages():
 
 	return np.asarray(polluted_images)
 
-def getOrgImages():
-	pollution = pickle.load(open("polluted_images", "rb"))
+def getOrgImages(filename="polluted_images"):
+	pollution = pickle.load(open(filename, "rb"))
 
 	original_images = list()
 	for p in pollution:
@@ -33,8 +33,8 @@ def getOrgImages():
 
 	return np.asarray(original_images)
 
-def getOrgLabel():
-	pollution = pickle.load(open("polluted_images", "rb"))
+def getOrgLabel(filename="polluted_images"):
+	pollution = pickle.load(open(filename, "rb"))
 
 	original_labels = list()
 	for p in pollution:
@@ -45,10 +45,10 @@ def getOrgLabel():
 
 	return np.asarray(original_labels)
 
-def showImage(size=1):
-	p_images = getPollutedImages()
-	o_images = getOrgImages()
-	o_labels = getOrgLabel()
+def showImage(filename="polluted_images", size=1):
+	p_images = getPollutedImages(filename)
+	o_images = getOrgImages(filename)
+	o_labels = getOrgLabel(filename)
 		
 	for i in range(size):
 		p_image = p_images[i].reshape(28,28)		
@@ -58,4 +58,3 @@ def showImage(size=1):
 		plt.show()
 		plt.imshow(p_image, cmap="gray", vmin=0, vmax=1.0)
 		plt.show()
-

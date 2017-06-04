@@ -9,10 +9,20 @@ from sklearn import manifold
 FILENAME = "isomap_model"
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
+attack_knn = False
+
 def normalization(arr, num):
 	return (sum(map(lambda x: x**num, arr))) ** (1 / num)
 
 if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		if "-k" in sys.argv or "--knn" in sys.argv:
+			print("Start attacking knn...")
+			attack_knn = True
+
+	if attack_knn:
+		knn_model = pickle.load(open("knn_model", "rb"))
+
 	x = tf.placeholder(tf.float32, [None, 784])
 	W = tf.Variable(tf.zeros([784, 10]))
 	b = tf.Variable(tf.zeros([10]))
@@ -29,10 +39,18 @@ if __name__ == "__main__":
 	sess = tf.InteractiveSession()
 	tf.global_variables_initializer().run()
 
-	for _ in range(1000):
+	for i in range(1000):
 		batch_xs, batch_ys = mnist.train.next_batch(100)
-		sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+		if attack_knn:
+			batch_ys = knn_model.predict(batch_xs)
 		
+		sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+		if (i * 100 / 1000) % 5 == 0:
+			print(i * 100 / 1000, "%...") 
+	
+	print("Finish black box training...")
 
 	prediction = tf.argmax(y, 1)
 	correct = tf.argmax(y_, 1)
@@ -41,8 +59,8 @@ if __name__ == "__main__":
 	original_labels = []
 	files_to_write = []
 
-	pollution_size = len(mnist.test.images)
-	# pollution_size = 100
+	# pollution_size = len(mnist.test.images)
+	pollution_size = 100
 	train_threshold = 5000
 	
 	for i in range(pollution_size):
@@ -50,6 +68,7 @@ if __name__ == "__main__":
 		image = mnist.test.images[i].reshape([1, 784])
 		label = mnist.test.labels[i].reshape([1, 10])
 
+		# Get the gradient for all the 784 dimensions
 		predicted_label = sess.run(prediction, feed_dict={x : image})[0]
 		correct_label = sess.run(correct, feed_dict={y_: label})[0]
 
@@ -118,7 +137,11 @@ if __name__ == "__main__":
 
 	# end deep fool
 	# out_file = input("outfile name: ")
-	out_file = "polluted_images"
+	if attack_knn:
+		out_file = "knn_polluted_images"
+	else:
+		out_file = "polluted_images"
+
 	pickle.dump(files_to_write, open(out_file, "wb"))
 
 	correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
@@ -127,5 +150,3 @@ if __name__ == "__main__":
 	print("test accuracy: ", sess.run(accuracy, feed_dict={x: polluted_images, y_: original_labels}))
 
 	sess.close()
-
-	
