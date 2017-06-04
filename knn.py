@@ -31,9 +31,18 @@ if __name__ == "__main__":
 			pollution = True
 
 	if protection:
-		im = manifold.Isomap(10, 50,n_jobs=-1)
-		train_xs = mnist.train.images[:10000]
-		train_ls = mnist.train.labels[:10000]
+		im = manifold.Isomap(10, 50, n_jobs=-1)
+		train_xs = list()
+		train_ls = list()
+
+		for i in range(len(mnist.train.images)):
+			if mnist.train.labels[i][1] == 1 or mnist.train.labels[i][7] == 1:
+				train_xs.append(mnist.train.images[i])
+				train_ls.append(mnist.train.labels[i])
+
+			if len(train_xs) > 50000:
+				break
+
 		train_xs = im.fit_transform(train_xs)
 		print("finish training")
 	else:
@@ -45,6 +54,7 @@ if __name__ == "__main__":
 
 	knnt = KNeighborsClassifier(n_neighbors=1)
 	knnt.fit(train_xs, train_ls)
+	print("finish training knn model")
 
 	# No need to train, go into test directly
 	if not pollution:
@@ -68,16 +78,17 @@ if __name__ == "__main__":
 
 		# for i in range(len(original_labels)):
 		for i in range(len(polluted_images)):
-			if protection:
-				test_x = im.transform(polluted_images[i].reshape(1, -1))[0].reshape(1, -1)
-			else:
-				test_x = polluted_images[i].reshape(1, -1)
+			if getMajorLabels([original_labels[i]]) == 1 or getMajorLabels([original_labels[i]]) == 7:
 
-			predicted_label = knnt.predict(test_x)[0]
+				if protection:
+					test_x = im.transform(polluted_images[i].reshape(1, -1))[0].reshape(1, -1)
+				else:
+					test_x = polluted_images[i].reshape(1, -1)
 
-			if any(predicted_label != original_labels[i]):
-				test_err += 1.0
-			test_num += 1.0
+				predicted_label = knnt.predict(test_x)[0]
+
+				if any(predicted_label != original_labels[i]):
+					test_err += 1.0
+				test_num += 1.0
 
 	print("test accuracy: ", 1.0 - test_err / test_num)
-	

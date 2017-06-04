@@ -1,11 +1,12 @@
 import pickle
 import numpy as np
 import scipy.misc
+import matplotlib.pyplot as plt
 
 def _checkNegative(arr):
-	for e in arr:
-		if e < 0:
-			return True
+	# for e in arr:
+	# 	if e < 0:
+	# 		return True
 
 	return False
 
@@ -44,7 +45,7 @@ def getOrgLabel():
 
 	return np.asarray(original_labels)
 
-def showImage(size=2):
+def showImage(size=1):
 	p_images = getPollutedImages()
 	o_images = getOrgImages()
 	o_labels = getOrgLabel()
@@ -53,6 +54,8 @@ def showImage(size=2):
 		p_image = p_images[i].reshape(28,28)		
 		o_image = o_images[i].reshape(28,28)
 
-		scipy.misc.toimage(p_image).show()
-		scipy.misc.toimage(o_image).show()
-		print(o_labels[i])
+		plt.imshow(o_image, cmap="gray", vmin=0, vmax=1.0)
+		plt.show()
+		plt.imshow(p_image, cmap="gray", vmin=0, vmax=1.0)
+		plt.show()
+

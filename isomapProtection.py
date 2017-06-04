@@ -54,5 +54,5 @@ if __name__ == "__main__":
 
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 	# print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
-	print(sess.run(accuracy, feed_dict={x: getPollutedImages()[:2], y_: getOrgLabel()[:2]}))
+	print(sess.run(accuracy, feed_dict={x: getPollutedImages(), y_: getOrgLabel()}))
 	
