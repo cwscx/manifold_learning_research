@@ -9,20 +9,11 @@ from sklearn import manifold
 FILENAME = "isomap_model"
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-attack_knn = False
 
 def normalization(arr, num):
 	return (sum(map(lambda x: x**num, arr))) ** (1 / num)
 
 if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		if "-k" in sys.argv or "--knn" in sys.argv:
-			print("Start attacking knn...")
-			attack_knn = True
-
-	if attack_knn:
-		knn_model = pickle.load(open("knn_model", "rb"))
-
 	x = tf.placeholder(tf.float32, [None, 784])
 	W = tf.Variable(tf.zeros([784, 10]))
 	b = tf.Variable(tf.zeros([10]))
@@ -42,9 +33,6 @@ if __name__ == "__main__":
 	for i in range(1000):
 		batch_xs, batch_ys = mnist.train.next_batch(100)
 
-		if attack_knn:
-			batch_ys = knn_model.predict(batch_xs)
-		
 		sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
 		if (i * 100 / 1000) % 5 == 0:
@@ -59,9 +47,8 @@ if __name__ == "__main__":
 	original_labels = []
 	files_to_write = []
 
-	# pollution_size = len(mnist.test.images)
-	pollution_size = 100
-	train_threshold = 5000
+	pollution_size = len(mnist.test.images)
+	train_threshold = 200
 	
 	for i in range(pollution_size):
 		
@@ -76,7 +63,9 @@ if __name__ == "__main__":
 
 		j = 0
 		while predicted_label == correct_label and j < train_threshold:
+			
 			j += 1
+			
 			if j == train_threshold:
 				print("reach train threshold")
 
@@ -108,22 +97,22 @@ if __name__ == "__main__":
 					if l < minimum:
 						minimum_confidence_diff = confidence_diff
 						minimum_gradient_diff = delta_gradient
-				
+			
 			if minimum_gradient_diff is None or minimum_gradient_diff is None:
 				continue
 			else:
 				r = abs(minimum_confidence_diff) / (normalization(minimum_gradient_diff, 2) ** 2) * minimum_gradient_diff
 				image = image + r
-
-				for j in range(len(image[0])):
-					if image[0][j] < 0:
-						image[0][j] = 0.0
+				
+				for k in range(len(image[0])):
+					if image[0][k] < 0:
+						image[0][k] = 0.0
 
 			predicted_label = sess.run(prediction, feed_dict={x: image})[0]
 
 
-		if (i * 100 / pollution_size) % 1 == 0:
-			print((i * 100 / pollution_size), "%...") 
+		if ((i + 1) * 100 / pollution_size) % 1 == 0:
+			print(((i + 1) * 100 / pollution_size), "%...") 
 
 		info = {}
 		info["original_image"] = mnist.test.images[i].reshape([1, 784])
@@ -137,10 +126,7 @@ if __name__ == "__main__":
 
 	# end deep fool
 	# out_file = input("outfile name: ")
-	if attack_knn:
-		out_file = "knn_polluted_images"
-	else:
-		out_file = "polluted_images"
+	out_file = "polluted_images"
 
 	pickle.dump(files_to_write, open(out_file, "wb"))
 
