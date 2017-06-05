@@ -1,12 +1,11 @@
 import pickle
 import numpy as np
-import scipy.misc
 import matplotlib.pyplot as plt
 
 def _checkNegative(arr):
-	# for e in arr:
-	# 	if e < 0:
-	# 		return True
+	for e in arr:
+		if e < 0:
+			return True
 
 	return False
 
@@ -29,7 +28,7 @@ def getOrgImages(filename="polluted_images"):
 	original_images = list()
 	for p in pollution:
 		if not _checkNegative(p["polluted_image"]):
-			original_images.append(p["original_image"][0])
+			original_images.append(p["original_image"])
 
 	return np.asarray(original_images)
 
@@ -39,9 +38,7 @@ def getOrgLabel(filename="polluted_images"):
 	original_labels = list()
 	for p in pollution:
 		if not _checkNegative(p["polluted_image"]):
-			l = [0] * 10
-			l[p["original_label"]] = 1
-			original_labels.append(l)
+			original_labels.append(p["original_label"])
 
 	return np.asarray(original_labels)
 
@@ -49,7 +46,7 @@ def showImage(filename="polluted_images", size=1):
 	p_images = getPollutedImages(filename)
 	o_images = getOrgImages(filename)
 	o_labels = getOrgLabel(filename)
-		
+	
 	for i in range(size):
 		p_image = p_images[i].reshape(28,28)		
 		o_image = o_images[i].reshape(28,28)

@@ -16,6 +16,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 protection = False
 pollution = False
 save = False
+distance = False
 
 def getMajorLabels(labels):
 	# Partition to put the largest element in the rightmost index
@@ -38,19 +39,9 @@ if __name__ == "__main__":
 
 	if protection:
 		im = manifold.Isomap(10, 50, n_jobs=-1)
-		train_xs = list()
-		train_ls = list()
-
-		for i in range(len(mnist.train.images)):
-			if mnist.train.labels[i][1] == 1 or mnist.train.labels[i][7] == 1:
-				train_xs.append(mnist.train.images[i])
-				train_ls.append(mnist.train.labels[i])
-
-			if len(train_xs) > 50000:
-				break
-
+		
 		train_xs = im.fit_transform(train_xs)
-		print("finish training")
+		print("finish training isomap")
 	else:
 		train_xs = mnist.train.images
 		train_ls = mnist.train.labels
@@ -58,7 +49,7 @@ if __name__ == "__main__":
 	test_num = 0.0
 	test_err = 0.0
 
-	knnt = KNeighborsClassifier(n_neighbors=1)
+	knnt = KNeighborsClassifier(n_neighbors=11)
 	knnt.fit(train_xs, train_ls)
 	print("finish training knn model")
 

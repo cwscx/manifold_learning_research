@@ -115,8 +115,8 @@ if __name__ == "__main__":
 			print(((i + 1) * 100 / pollution_size), "%...") 
 
 		info = {}
-		info["original_image"] = mnist.test.images[i].reshape([1, 784])
-		info["original_label"] = correct_label
+		info["original_image"] = mnist.test.images[i]
+		info["original_label"] = mnist.test.labels[i]
 		info["polluted_image"] = image.reshape([784])
 		info["polluted_label"] = predicted_label
 
