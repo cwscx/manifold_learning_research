@@ -47,11 +47,21 @@ def showImage(filename="polluted_images", size=1):
 	o_images = getOrgImages(filename)
 	o_labels = getOrgLabel(filename)
 	
+	sum = 0
 	for i in range(size):
 		p_image = p_images[i].reshape(28,28)		
 		o_image = o_images[i].reshape(28,28)
 
+		diff = p_images[i] - o_images[i]
+		sum += np.linalg.norm(diff)
+
+		"""
 		plt.imshow(o_image, cmap="gray", vmin=0, vmax=1.0)
 		plt.show()
 		plt.imshow(p_image, cmap="gray", vmin=0, vmax=1.0)
 		plt.show()
+		"""
+
+	print(sum / 1000)
+
+showImage("knn_polluted_images", 1000)

@@ -49,7 +49,7 @@ if __name__ == "__main__":
 	test_num = 0.0
 	test_err = 0.0
 
-	knnt = KNeighborsClassifier(n_neighbors=11)
+	knnt = KNeighborsClassifier(n_neighbors=3)
 	knnt.fit(train_xs, train_ls)
 	print("finish training knn model")
 
