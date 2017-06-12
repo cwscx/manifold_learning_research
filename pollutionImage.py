@@ -55,12 +55,10 @@ def showImage(filename="polluted_images", size=1):
 		diff = p_images[i] - o_images[i]
 		sum += np.linalg.norm(diff)
 
-		"""
 		plt.imshow(o_image, cmap="gray", vmin=0, vmax=1.0)
 		plt.show()
 		plt.imshow(p_image, cmap="gray", vmin=0, vmax=1.0)
 		plt.show()
-		"""
 
 	print(sum / 1000)
 
