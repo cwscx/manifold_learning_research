@@ -38,8 +38,8 @@ def showImage(image):
 if __name__ == "__main__":
 	if "-c" in sys.argv or "--clean" in sys.argv:
 		target_knnt = KNeighborsClassifier(n_neighbors=1)
-		target_knnt.train(mnist.train.images, mnist.train.labels)
-		pickle.dump(target_knnt, open("knn_model", "rb"))
+		target_knnt.fit(mnist.train.images, mnist.train.labels)
+		pickle.dump(target_knnt, open("knn_model", "wb"))
 	else:
 		target_knnt = pickle.load(open("knn_model", "rb"))
 
