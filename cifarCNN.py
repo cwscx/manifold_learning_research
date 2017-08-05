@@ -1,14 +1,8 @@
-import pickle, sys, os
+import pickle, sys, os, random
 import tensorflow as tf
 import numpy as np
 
 from readCifar import *
-
-cifar_train_batch_1 = getTrainBatchData(1)
-cifar_test_batch = getTestBatchData()
-
-test_image = getData(cifar_test_batch)
-test_label = getLabels(cifar_test_batch)
 
 def weight_variable(shape, stddev):
 	initial = tf.truncated_normal(shape, stddev=stddev)
@@ -64,9 +58,7 @@ if __name__ == "__main__":
 	y_conv = tf.matmul(h_fc2, W_fc3) + b_fc3
 	y_ = tf.placeholder(tf.float32, [None, 10])
 
-	print(y_conv.shape)
-
-	learning_rate = 1e-4
+	learning_rate = 1e-3
 
 	cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
 	train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
@@ -80,24 +72,28 @@ if __name__ == "__main__":
 	sess = tf.InteractiveSession()
 	sess.run(tf.global_variables_initializer())
 
-	for j in range(1, 201):
-		cifar_train_batch = getTrainBatchData(j)
-		
-		if (j / 5) % 2 == 0:	
-			train_images = getData(cifar_train_batch)
-		else:
-			train_images = getFlipData(cifar_train_batch)
+	train_images, train_labels = getAllPreProcessedTrainBatch()
+	test_image, test_label = getPreProcessedTestBatch()
 
-		train_labels = getLabels(cifar_train_batch)
+	print("Finish pre process all data")
+	
+	indices = list(range(len(train_labels)))
 
-		for i in range(100):
-			batch_images = train_images[i * 100 : (i + 1) * 100]
-			batch_labels = train_labels[i * 100 : (i + 1) * 100]
+	for j in range(1, 5001):
+		random.seed(j)
+		random_indices = random.sample(indices, 100)
 
-			train_accuracy = accuracy.eval(feed_dict={x:batch_images, y_: batch_labels})
-			print("step %d, training accuracy %g" %((j - 1) * 100 + i, train_accuracy))
+		batch_images = np.array([train_images[random_indices[0]]])
+		batch_labels = np.array([train_labels[random_indices[0]]])
 
-			train_step.run(feed_dict={x: batch_images, y_: batch_labels})
+		for i in range(1, 100):
+			batch_images = np.append(batch_images, np.array([train_images[random_indices[i]]]), axis=0)
+			batch_labels = np.append(batch_labels, np.array([train_labels[random_indices[i]]]), axis=0)
+
+		train_accuracy = accuracy.eval(feed_dict={x:batch_images, y_: batch_labels})
+		print("step %d, training accuracy %g" %(j, train_accuracy))
+
+		train_step.run(feed_dict={x: batch_images, y_: batch_labels})
 
 		if j % 10 == 0:
 			acc = 0.0
@@ -107,6 +103,7 @@ if __name__ == "__main__":
 
 			acc /= 100.0
 			print("test accuracy %g"% acc)
+		
 
 	"""
 	saver = tf.train.Saver()
