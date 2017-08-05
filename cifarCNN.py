@@ -4,6 +4,8 @@ import numpy as np
 
 from readCifar import *
 
+processed_train_data = "cifar_processed_train_batch"
+
 def weight_variable(shape, stddev):
 	initial = tf.truncated_normal(shape, stddev=stddev)
 	return tf.Variable(initial)
@@ -72,7 +74,12 @@ if __name__ == "__main__":
 	sess = tf.InteractiveSession()
 	sess.run(tf.global_variables_initializer())
 
-	train_images, train_labels = getAllPreProcessedTrainBatch()
+	if not os.path.exists(processed_train_data):
+		train_images, train_labels = getAllPreProcessedTrainBatch()
+		pickle.dump((train_images, train_labels), open(processed_train_data, "wb"))
+	else:
+		train_images, train_labels = pickle.load(open(processed_train_data, "rb"))
+
 	test_image, test_label = getPreProcessedTestBatch()
 
 	print("Finish pre process all data")
@@ -95,7 +102,7 @@ if __name__ == "__main__":
 
 		train_step.run(feed_dict={x: batch_images, y_: batch_labels})
 
-		if j % 10 == 0:
+		if j % 100 == 0:
 			acc = 0.0
 
 			for i in range(100):
