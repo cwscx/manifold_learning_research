@@ -6,6 +6,9 @@ from readCifar import *
 
 processed_train_data = "cifar_processed_train_batch"
 
+LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
+
 def weight_variable(shape, stddev):
 	initial = tf.truncated_normal(shape, stddev=stddev)
 	return tf.Variable(initial)
@@ -60,13 +63,20 @@ if __name__ == "__main__":
 	y_conv = tf.matmul(h_fc2, W_fc3) + b_fc3
 	y_ = tf.placeholder(tf.float32, [None, 10])
 
-	learning_rate = 1e-3
+	global_step = tf.contrib.framework.get_or_create_global_step()
+	decay_steps = 350000
+	learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
+			                                  global_step,
+			                                  decay_steps,
+			                                  LEARNING_RATE_DECAY_FACTOR,
+			                                  staircase=True)
 
-	cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
-	train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
+	cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv)
+	cross_entropy_mean = tf.reduce_mean(cross_entropy)
+	opt = tf.train.GradientDescentOptimizer(learning_rate)
+	train_step = opt.minimize(cross_entropy_mean)
 
-	optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-	class_gradient = optimizer.compute_gradients(y_conv, tf.trainable_variables())
+	class_gradient = opt.compute_gradients(y_conv, tf.trainable_variables())
 
 	correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -86,7 +96,7 @@ if __name__ == "__main__":
 	
 	indices = list(range(len(train_labels)))
 
-	for j in range(1, 5001):
+	for j in range(1, 10001):
 		random.seed(j)
 		random_indices = random.sample(indices, 100)
 
