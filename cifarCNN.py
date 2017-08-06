@@ -6,7 +6,7 @@ from readCifar import *
 
 processed_train_data = "cifar_processed_train_batch"
 
-LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
+LEARNING_RATE_DECAY_FACTOR = 0.5  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
 def weight_variable(shape, stddev):
@@ -29,22 +29,25 @@ if __name__ == "__main__":
 	b_conv1 = bias_variable([64], 0.0)
 
 	x = tf.placeholder(tf.float32, shape=[100, 3072])
-	x_image = tf.reshape(x, [-1,32,32,3])
+	x_image = tf.reshape(x, [-1,3,32,32])
+	t_x_image = tf.transpose(x_image, (0,2,3,1))
 
-	h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
-	h_pool1 = max_pool_2x2(h_conv1)
-	h_norm1 = tf.nn.lrn(h_pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                    name='norm1')
+	h_conv1 = conv2d(t_x_image, W_conv1)
+	pre_activation1 = tf.nn.bias_add(h_conv1, b_conv1)
+	conv1 = tf.nn.relu(pre_activation1)
+	h_pool1 = max_pool_2x2(conv1)
+	h_norm1 = tf.nn.lrn(h_pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 
 	W_conv2 = weight_variable([5,5,64,64], 5e-2)
 	b_conv2 = bias_variable([64], 0.1)
 
-	h_conv2 = tf.nn.relu(conv2d(h_norm1, W_conv2) + b_conv2)
-	h_norm2 = tf.nn.lrn(h_conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-                    name='norm2')
+	h_conv2 = conv2d(h_norm1, W_conv2)
+	pre_activation2 = tf.nn.bias_add(h_conv2, b_conv2)
+	conv2 = tf.nn.relu(pre_activation2)
+	h_norm2 = tf.nn.lrn(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 	h_pool2 = max_pool_2x2(h_norm2)
-	reshape = tf.reshape(h_pool2, [100, -1])
 
+	reshape = tf.reshape(h_pool2, [100, -1])
 	weight_dim = reshape.get_shape()[1].value
 
 	W_fc1 = weight_variable([weight_dim, 384], 4e-2)
@@ -58,13 +61,13 @@ if __name__ == "__main__":
 	h_fc2 = tf.nn.relu(tf.matmul(h_fc1, W_fc2) + b_fc2)
 
 	W_fc3 = weight_variable([192, 10], 1/192)
-	b_fc3 = bias_variable([10], 0.0)
+	b_fc3 = bias_variable([10], 0.1)
 
 	y_conv = tf.matmul(h_fc2, W_fc3) + b_fc3
 	y_ = tf.placeholder(tf.float32, [None, 10])
 
 	global_step = tf.contrib.framework.get_or_create_global_step()
-	decay_steps = 350000
+	decay_steps = 100000
 	learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
 			                                  global_step,
 			                                  decay_steps,
